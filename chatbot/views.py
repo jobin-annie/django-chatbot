@@ -37,7 +37,6 @@ def chatbot(request):
         return JsonResponse({'message':message, 'response':response})
     return render(request, 'chatbot.html', {'chats': chats, 'user': request.user})
 
-
 def login(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -51,6 +50,11 @@ def login(request):
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             user = None
+        
+        # just for debugging
+        print("User: ", user)
+        password_match = check_password(password, user.password)
+        print("Password Match:", password_match)
 
         if user is not None and check_password(password, user.password):
             auth.login(request, user)
@@ -76,8 +80,9 @@ def register(request):
 
         if username != '' and email != '':
             try:
-                hashed_password = make_password(password)
-                user = User.objects.create_user(username, email, hashed_password)
+                # hashed_password = make_password(password)
+                # print("Hashed Password:", hashed_password)
+                user = User.objects.create_user(username, email, password)
                 user.save()
                 auth.login(request, user)
                 print("User Created Successfully:", user.username)
@@ -89,8 +94,6 @@ def register(request):
             error_message = "Invalid form data. Please make sure all fields are filled correctly."
             return render(request, 'register.html', {'error_message': error_message})
     return render(request, 'register.html')
-
-
 
 def logout(request):
     auth.logout(request)
